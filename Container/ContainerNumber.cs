@@ -54,19 +54,36 @@
 
         public ContainerNumber(string containerNumber)
         {
-            containerNumber = containerNumber.ToUpper();
+            string upperContainerNumber = ValidateLength(containerNumber);
+            ValidateEquipmentCategory(upperContainerNumber);
+            ValidateSerialNumberDigits(upperContainerNumber);
 
+            _owner = upperContainerNumber.Substring(0, 3);
+            _equipmentCategory = upperContainerNumber[3].ToString();
+            _serialNumber = upperContainerNumber.Substring(4, 6);
+            _checkDigit = ValidateAndExtractCheckDigit(upperContainerNumber);
+        }
+
+        private string ValidateLength(string containerNumber)
+        {
             if (string.IsNullOrEmpty(containerNumber) || containerNumber.Length < 11)
             {
                 throw new ArgumentException("Argument is too short");
             }
+            return containerNumber.ToUpper();
+        }
 
-            char category = char.ToUpper(containerNumber[3]);
+        private void ValidateEquipmentCategory(string containerNumber)
+        {
+            char category = containerNumber[3];
             if (category != 'U' && category != 'J' && category != 'Z')
             {
                 throw new ArgumentException("4th character is not a valid equipment category group (U, J, or Z)");
             }
+        }
 
+        private void ValidateSerialNumberDigits(string containerNumber)
+        {
             for (int i = 4; i <= 9; i++)
             {
                 if (!char.IsDigit(containerNumber[i]))
@@ -74,7 +91,10 @@
                     throw new ArgumentException("Characters 5-10 must be digits");
                 }
             }
+        }
 
+        private byte ValidateAndExtractCheckDigit(string containerNumber)
+        {
             byte expectedCheckDigit = CalculateCheckDigit(containerNumber.Substring(0, 10));
 
             char actualCheckDigitChar = containerNumber[10];
@@ -83,31 +103,23 @@
                 throw new ArgumentException("Check digit is not correct");
             }
 
-            _owner = containerNumber.Substring(0, 3).ToUpper();
-            _equipmentCategory = category.ToString();
-            _serialNumber = containerNumber.Substring(4, 6);
-            _checkDigit = (byte)(actualCheckDigitChar - '0');
+            return (byte)(actualCheckDigitChar - '0');
         }
 
-        /// <summary>
-        /// Calculates the ISO 6346 check digit for a 10-character container code.
-        /// </summary>
-        /// <param name="first10Chars">The first 10 characters (Owner Code, Category Identifier, Serial Number).</param>
-        /// <returns>Calculated check digit (0 to 9, where 10 remainder becomes 0).</returns>
         public byte CalculateCheckDigit(string first10Chars)
         {
             int totalSum = 0;
 
             for (int position = 0; position < 10; position++)
             {
-                char character = char.ToUpper(first10Chars[position]);
+                char character = first10Chars[position];
 
                 if (!_characterWeights.TryGetValue(character, out byte numericalValue))
                 {
                     throw new ArgumentException($"Invalid character '{character}' at position {position + 1}.");
                 }
 
-                int factor = 1 << position; 
+                int factor = 1 << position;
                 totalSum += numericalValue * factor;
             }
 
