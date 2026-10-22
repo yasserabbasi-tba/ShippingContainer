@@ -58,5 +58,17 @@ public class ContainerNumber
         {
             throw new ArgumentException("Argument is too short");
         }
+
+        if (containerNumber[3] != 'U' && containerNumber[3] != 'J' && containerNumber[3] != 'Z')
+        {
+            throw new ArgumentException("4th character is not a valid equipment category group (U, J, or Z)");
+        } 
+        _owner = containerNumber;
+
+        if (containerNumber.Substring(4, 6).Any(c => !char.IsDigit(c)))
+        {
+            throw new ArgumentException("Characters 5-10 must be digits");
+        } 
+        _serialNumber = containerNumber;
     }
 }
