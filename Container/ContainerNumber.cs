@@ -54,6 +54,9 @@ public class ContainerNumber
 
     public ContainerNumber(string containerNumber)
     {
-        throw new NotImplementedException();
+        if (containerNumber.Length < 11)
+        {
+            throw new ArgumentException("Argument is too short");
+        }
     }
 }
