@@ -54,6 +54,21 @@ public class ContainerNumber
 
     public ContainerNumber(string containerNumber)
     {
-        throw new NotImplementedException();
+        // Regex to check the containerNumber
+        this.CheckContainerFormat(containerNumber);
+
+    }
+
+    private void CheckContainerFormat(string containerNumber)
+    {
+        if (containerNumber.Length < 11)
+        {
+            throw new ArgumentException("Argument is too short");
+        }
+
+        if (Char.ToLower(containerNumber[3]) != 'u' || Char.ToLower(containerNumber[3]) != 'j' || Char.ToLower(containerNumber[3]) != 'z')
+        {
+            throw new ArgumentException("4th character is not a valid equipment category group (U, J, or Z)");
+        }
     }
 }
